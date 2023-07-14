@@ -5,17 +5,64 @@
 #    hits { id,
 #           name, 
 #           entity,
-#            object {
-#               ... on Target {
+#           object {
+#              ... on Target {
 #              associatedDiseases(page: {index: 0, size: 5}) {
 #                 rows {
-#                  score
-#                   disease {
-#                     name
-#                       }
+#                    score
+#                    disease {
+#                       name
 #                    }
-#                }
-#            }
+#                 }
+#              }
+#           }
+#        }
+#     }
+#   }
+# }
+#}
+
+### What are the targets of vorinostat?
+#
+### query targeted_genes {
+#   search(queryString: "vorinostat", entityNames: "drug") {
+#    hits { id,
+#           name,
+#           entity,
+#           object {
+#              ... on Drug {
+#              linkedTargets {
+#                 rows {
+#                    id
+#                    approvedSymbol
+#                    approvedName
+#                 }
+#              }
+#           }
+#        }
+#     }
+#   }
+# }
+#}
+
+
+### Find 5 drugs that are used for treating ulcerative colitis.
+#
+### query treatment_drugs {
+#   search(queryString: "ulcerative colitis", entityNames: "disease") {
+#     hits { id
+#            name
+#            entity
+#            object {
+#               ... on Disease {
+#               knownDrugs {
+#                 rows {
+#                    prefName
+#                    drugId
+#                    drugType
+#                 }
+#              }
+#           }
 #        }
 #     }
 #   }
