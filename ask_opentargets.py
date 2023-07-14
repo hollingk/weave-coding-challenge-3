@@ -32,7 +32,7 @@ def chatbot_graphql(user_input:str) -> str:
             {"role": "assistant", "content": "query treatment_drugs { search(queryString: \"ulcerative colitis\", entityNames: \"disease\") { \
             hits { id, name, entity, object { \
             ... on Disease { knownDrugs { \
-            rows { approvedSymbol, approvedName } } } } } } }"},
+            rows { prefName, drugId, drugType } } } } } } }"},
             {"role": "user", "content": user_input},
         ],
         temperature=0,
@@ -120,37 +120,38 @@ def print_returned_results(returned_rows:dict) -> None:
         print(f"{i+1}. {j}")
 
 
+if __name__ == "__main__":
 
-# read Open AI API key from environment variable
-openai.api_key = os.environ.get("OPENAI_API_KEY")
-if not openai.api_key:
-    inform_user("Must populate environment variable OPENAI_API_KEY with secret key, e.g.:\
-                \nexport OPENAI_API_KEY=<your-secret-key>", quit=True)
+    # read Open AI API key from environment variable
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
+    if not openai.api_key:
+        inform_user("Must populate environment variable OPENAI_API_KEY with secret key, e.g.:\
+                    \nexport OPENAI_API_KEY=<your-secret-key>", quit=True)
 
-# Prompt user for input to query.
-# user_input = "Find the top 2 diseases associated with BRCA1"
-user_input = input("How can I help you today?\
-                   \nE.g., ask me to:\
-                   \nFind the top 2 diseases associated with BCNA1.\nor\
-                   \nWhat are the targets of Trastuzumab?\nor\
-                   \nFind drugs that are used for treating hypertension.\n_\n")
+    # Prompt user for input to query.
+    # user_input = "Find the top 2 diseases associated with BRCA1"
+    user_input = input("How can I help you today?\
+                    \nE.g., ask me to:\
+                    \nFind the top 2 diseases associated with BRCA1.\nor\
+                    \nWhat are the targets of Trastuzumab?\nor\
+                    \nFind drugs that are used for treating osteoporosis.\n_\n")
 
-# Uncomment to use file-based prompts to request GraphQL query from OpenAI
-# -- maybe less expensive but may ultimately require more API calls
-# prompt_filename="graphql_schema_treatments.txt"
-# query_string = prompt_graphql(prompt_filename, user_input)
+    # Uncomment to use file-based prompts to request GraphQL query from OpenAI
+    # -- maybe less expensive but may ultimately require more API calls
+    # prompt_filename="graphql_schema_treatments.txt"
+    # query_string = prompt_graphql(prompt_filename, user_input)
 
-# Build a chatbot to request GraphQL query from OpenAI
-# -- maybe more expensive but potentially more flexible
-query_string = chatbot_graphql(user_input)
+    # Build a chatbot to request GraphQL query from OpenAI
+    # -- maybe more expensive but potentially more flexible
+    query_string = chatbot_graphql(user_input)
 
-# output query to file for later analysis
-# output_query_file(query_string)
+    # output query to file for later analysis
+    # output_query_file(query_string)
 
-print(query_string)
-# Query Open Targets
-hits_list = query_opentargets(query_string)
+    print(query_string)
+    # Query Open Targets
+    hits_list = query_opentargets(query_string)
 
-# try to be super clever about extracting print-out-able results
-returned_rows = extract_values(hits_list, "rows")
-print_returned_results(returned_rows)
+    # try to be super clever about extracting print-out-able results
+    returned_rows = extract_values(hits_list, "rows")
+    print_returned_results(returned_rows)
