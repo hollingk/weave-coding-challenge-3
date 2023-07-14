@@ -21,6 +21,7 @@ def chatbot_graphql(user_input:str) -> str:
             message_list.append(json.loads(chatline.strip()))
     message_list.append({"role": "user", "content": user_input})
 
+    # or model="gpt-3.5-turbo-instruct"
     response_msg = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
         messages=message_list,
@@ -89,7 +90,7 @@ def query_opentargets(query_string:str) -> dict:
         response = requests.post(base_url, json={"query": query_string})
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
-        inform_user(err, quit=False)
+        # inform_user(err, quit=False)
         inform_user("Open Targets query failed; try a different question.", quit=True)
 
     # Transform API response from JSON into Python dictionary and return
@@ -103,8 +104,18 @@ def query_opentargets(query_string:str) -> dict:
             inform_user("None found.", quit=True)
         return hits_list[0]
 
-def print_returned_results(returned_rows:dict) -> None:
-    extracted_name_things = extract_values(returned_rows, "name", fuzzy_match=True)
+def print_hits(hits_list:dict) -> None:
+    # try to be clever about "guessing" correct output
+    returned_rows = extract_values(hits_list, "rows")
+    if not returned_rows:
+        extracted_name_things = extract_values(hits_list, "id")
+    else:
+        extracted_name_things = extract_values(returned_rows, "name", fuzzy_match=True)
+        if not extracted_name_things:
+            extracted_name_things = extract_values(returned_rows, "id")
+    if not extracted_name_things:
+        print("None found, or incorrect format returned.")
+        return
     for i, j in enumerate(list(dict.fromkeys(extracted_name_things))):
         # list(dict.fromkeys(<list>)) gets unique set while preserving order
         print(f"{i+1}. {j}")
@@ -120,7 +131,7 @@ if __name__ == "__main__":
 
     # Prompt user for input to query.
     # user_input = "Find the top 2 diseases associated with BRCA1"
-    user_input = input("How can I help you today?\
+    user_input = input("Hello, and welcome to Ask Open Targets. How can I help you today?\
                     \nE.g., ask me to:\
                     \nFind the top 2 diseases associated with BRCA1.\nor\
                     \nWhat are the targets of Trastuzumab?\nor\
@@ -135,13 +146,11 @@ if __name__ == "__main__":
     # -- maybe more expensive but potentially more flexible
     query_string = chatbot_graphql(user_input)
 
-    # output query to file for later analysis
+    # Uncomment to output query to file for later analysis
     # output_query_file(query_string)
 
-    print(query_string)
     # Query Open Targets
     hits_list = query_opentargets(query_string)
 
     # try to be super clever about extracting print-out-able results
-    returned_rows = extract_values(hits_list, "rows")
-    print_returned_results(returned_rows)
+    print_hits(hits_list)
