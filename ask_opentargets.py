@@ -115,24 +115,6 @@ def query_opentargets(query_string:str) -> dict:
         return hits_list[0]
 
 def print_returned_results(returned_rows:dict) -> None:
-    # the manual, hard way...
-    # extractable_keys = []
-    # for qr in returned_rows:
-    #     if type(qr) is dict:
-    #         for k in qr.keys():
-    #             extractable_keys.append(k)
-    # for ek in list(set(extractable_keys)):
-    #     results_list = extract_values(hits_list, ek)
-    #     for i, j in enumerate(results_list):
-    #         if type(j) is dict:
-    #             results_keys = list(j.keys())
-    #             for rk in results_keys:
-    #                 if "name" in rk.lower():
-    #                     print(f"{i+1}. {j[rk]}")
-    #         else:
-    #             print(f"{i+1}. {j}")
-
-    # the slightly more clever(?) way:
     extracted_name_things = extract_values(returned_rows, "name", fuzzy_match=True)
     for i, j in enumerate(extracted_name_things):
         print(f"{i+1}. {j}")
