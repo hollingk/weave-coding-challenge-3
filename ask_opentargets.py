@@ -33,6 +33,12 @@ def chatbot_graphql(user_input:str) -> str:
             hits { id, name, entity, object { \
             ... on Disease { knownDrugs { \
             rows { prefName, drugId, drugType } } } } } } }"},
+            {"role": "user", "content": "Which diseases are associated with the genes targeted by Fasudil?"},
+            {"role": "assistant", "content": "query associated_diseases { search(queryString: \"Fasudil\", entityNames: \"drug\") { \
+            hits { id, name, entity, object { \
+            ... on Drug { linkedTargets { \
+            rows { id, approvedSymbol, associatedDiseases { \
+            rows { score, disease {name} } } } } } } } } }"},
             {"role": "user", "content": user_input},
         ],
         temperature=0,
@@ -116,7 +122,8 @@ def query_opentargets(query_string:str) -> dict:
 
 def print_returned_results(returned_rows:dict) -> None:
     extracted_name_things = extract_values(returned_rows, "name", fuzzy_match=True)
-    for i, j in enumerate(extracted_name_things):
+    for i, j in enumerate(list(dict.fromkeys(extracted_name_things))):
+        # list(dict.fromkeys(<list>)) gets unique set while preserving order
         print(f"{i+1}. {j}")
 
 
