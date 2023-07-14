@@ -12,35 +12,18 @@ def inform_user(msg:str, quit:bool) -> None:
         exit(0)
 
 def chatbot_graphql(user_input:str) -> str:
+
+    message_list = [{"role": "system", "content": "You are a helpful, low-level GraphQL programming assistant."},
+            {"role": "user", "content": "Help me translate the following natural language sentences into GraphQL queries."},
+            {"role": "assistant", "content": "Sure, I'd be happy to!"}]
+    with open("chat-assistant-graphql.jsonl", 'r') as fp:
+        for chatline in fp:
+            message_list.append(json.loads(chatline.strip()))
+    message_list.append({"role": "user", "content": user_input})
+
     response_msg = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-0613",
-        messages=[
-            {"role": "system", "content": "You are a helpful, low-level GraphQL programming assistant."},
-            {"role": "user", "content": "Help me translate the following natural language sentences into GraphQL queries."},
-            {"role": "assistant", "content": "Sure, I'd be happy to!"},
-            {"role": "user", "content": "What are the top 5 diseases associated with gene APOE?"},
-            {"role": "assistant", "content": "query top_n_associated_diseases {search(queryString: \"APOE\", entityNames: \"target\") { \
-            hits { id, name, entity, object { \
-            ... on Target { associatedDiseases(page: {index: 0, size: 5}) { \
-            rows { score, disease {name} } } } } } } }"},
-            {"role": "user", "content": "What are the targets of vorinostat?"},
-            {"role": "assistant", "content": "query targeted_genes { search(queryString: \"vorinostat\", entityNames: \"drug\") { \
-            hits { id, name, entity, object { \
-            ... on Drug { linkedTargets { \
-            rows { id, approvedSymbol, approvedName } } } } } } }"},
-            {"role": "user", "content": "Find drugs used for treating ulcerative colitis."},
-            {"role": "assistant", "content": "query treatment_drugs { search(queryString: \"ulcerative colitis\", entityNames: \"disease\") { \
-            hits { id, name, entity, object { \
-            ... on Disease { knownDrugs { \
-            rows { prefName, drugId, drugType } } } } } } }"},
-            {"role": "user", "content": "Which diseases are associated with the genes targeted by Fasudil?"},
-            {"role": "assistant", "content": "query associated_diseases { search(queryString: \"Fasudil\", entityNames: \"drug\") { \
-            hits { id, name, entity, object { \
-            ... on Drug { linkedTargets { \
-            rows { id, approvedSymbol, associatedDiseases { \
-            rows { score, disease {name} } } } } } } } } }"},
-            {"role": "user", "content": user_input},
-        ],
+        messages=message_list,
         temperature=0,
     )
 

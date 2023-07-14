@@ -1,0 +1,14 @@
+{"role": "user", "content": "What are the top 5 diseases associated with gene APOE?"}
+{"role": "assistant", "content": "query top_n_associated_diseases {search(queryString: \"APOE\", entityNames: \"target\") { hits { id, name, entity, object { ... on Target { associatedDiseases(page: {index: 0, size: 5}) { rows { score, disease {name} } } } } } } }"}
+{"role": "user", "content": "What are the targets of vorinostat?"}
+{"role": "assistant", "content": "query targeted_genes { search(queryString: \"vorinostat\", entityNames: \"drug\") { hits { id, name, entity, object { ... on Drug { linkedTargets { rows { id, approvedSymbol, approvedName } } } } } } }"}
+{"role": "user", "content": "Find drugs used for treating ulcerative colitis."}
+{"role": "assistant", "content": "query treatment_drugs { search(queryString: \"ulcerative colitis\", entityNames: \"disease\") { hits { id, name, entity, object { ... on Disease { knownDrugs { rows { prefName, drugId, drugType } } } } } } }"}
+{"role": "user", "content": "Which diseases are associated with the genes targeted by Fasudil?"}
+{"role": "assistant", "content": "query associated_diseases { search(queryString: \"Fasudil\", entityNames: \"drug\") { hits { id, name, entity, object { ... on Drug { linkedTargets { rows { id, approvedSymbol, associatedDiseases { rows { score, disease {name} } } } } } } } } }"}
+{"role": "user", "content": "Which genes are associated with Alzheimer's?"}
+{"role": "assistant", "content": "query associated_genes { search(queryString: \"Alzheimer's\", entityNames: \"disease\") { hits { id, name, entity, object { ... on Disease { associatedTargets { rows { target { id, approvedName, approvedSymbol } } } } } } } }"}
+{"role": "user", "content": "What are the pathways associated with the APOE gene?"}
+{"role": "assistant", "content": "query associated_pathways { search(queryString: \"APOE\", entityNames: \"target\") { hits { id, name, entity, object { ... on Target { pathways { pathwayId } } } } } }"}
+{"role": "user", "content": "What are the pathways associated with Alzheimer's?"}
+{"role": "assistant", "content": "query diseases_with_pathways { search(queryString: \"Alzheimer's\", entityNames: \"disease\") { hits { id, name, entity, object { ... on Disease { associatedTargets { rows { target { pathways { pathwayId } } } } } } } } }"}
